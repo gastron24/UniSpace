@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\UniSpace.props" />
+</Project>

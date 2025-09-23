@@ -1,0 +1,13 @@
+﻿services:
+  unispace:
+    image: unispace
+    build:
+      context: .
+      dockerfile: UniSpace/Dockerfile
+
+  user:
+    image: user
+    build:
+      context: .
+      dockerfile: User/Dockerfile
+
