@@ -6,5 +6,5 @@ namespace UserService.Services;
 
 public interface IUserRegister
 {
-    (bool Success, string Message) RegisterUser(RegistrationModelDto registrationModelDto);
+    (bool Success, string Message) RegisterUser(RegisterUserDto registerUserDto);
 }

@@ -1,31 +1,37 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddAuthorization();
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "UniSpace Corp.";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "Clients";
+var jwtKey = builder.Configuration["Jwt:Key"] ??
+             throw new InvalidOperationException("JWT Key не задан в appsettings.json!");
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidIssuer = jwtIssuer,
             ValidateAudience = true,
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidAudience = jwtAudience,
             ValidateLifetime = true,
-            IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
-            ValidateIssuerSigningKey = true
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)), 
+            ValidateIssuerSigningKey = true,
+            ClockSkew = TimeSpan.Zero
         };
     });
+
+builder.Services.AddAuthorization();
 builder.Services.AddControllers();
-builder.Services.AddScoped<UserService.Services.IUserRegister, UserService.Services.UserRegister>();
+
+builder.Services.AddScoped<UserService.Services.IUserRegister, UserService.Services.UserRegisterService>();
 
 var app = builder.Build();
 
@@ -33,30 +39,23 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-app.Map("/login/{username}", (string username) =>
+app.MapGet("/login/{username}", (string username) =>
 {
     var claims = new List<Claim> { new Claim(ClaimTypes.Name, username) };
+
     var jwt = new JwtSecurityToken(
-        issuer: AuthOptions.Issuer,
-        audience: AuthOptions.Audience,
+        issuer: jwtIssuer,
+        audience: jwtAudience,
         claims: claims,
         expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(30)),
-        signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(),
-            SecurityAlgorithms.HmacSha256));
+        signingCredentials: new SigningCredentials(
+            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)), 
+            SecurityAlgorithms.HmacSha256)
+    );
 
     return Results.Ok(new JwtSecurityTokenHandler().WriteToken(jwt));
 });
 
-
 app.MapGet("/data", [Authorize] () => new { message = "Hello World!" });
 
 app.Run();
-
-public class AuthOptions()
-{
-    public const string Issuer = "UniSpace Corp."; 
-    public const string Audience = "Clients"; 
-    const string Key = "SuperDuperSecretKey123!";   
-    public static SymmetricSecurityKey GetSymmetricSecurityKey() => 
-        new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Key));
-}

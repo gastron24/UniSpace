@@ -19,26 +19,22 @@ public class RegistrationController : ControllerBase
 
 
   [HttpPost]
-  public IActionResult Register([FromBody] RegistrationModelDto model)
+  public IActionResult Register([FromBody] RegisterUserDto user)
   {
-    Console.WriteLine($"Приветствую в UniSpace экосистеме!");
+    if (!ModelState.IsValid)
+    {
+      return BadRequest(ModelState);
+    }
 
-    var (succes, message) = _userRegister.RegisterUser(model);
+    var (success, message) = _userRegister.RegisterUser(user);
 
-    if (!succes)
+    if (!success)
       return BadRequest(message);
 
-    return Ok(new
-    {
-      Message = message,
-      User = new
-      {
-        model.firstName,
-        model.lastName,
-        model.email,
-        model.password
-
-      }
-    });
+    return Ok(new { Message = message });
   }
-}
+  
+  
+};
+
+
