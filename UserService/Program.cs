@@ -4,6 +4,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
+using UserService.Infrastructure;
+using UserService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +34,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 
-builder.Services.AddScoped<UserService.Services.IUserRegister, UserService.Services.UserRegisterService>();
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<UserDb>(options =>
+    options.UseNpgsql(connectionString));
+
+builder.Services.AddScoped<IUserRegister, UserRegisterService>();
 
 var app = builder.Build();
 
@@ -39,22 +46,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-app.MapGet("/login/{username}", (string username) =>
-{
-    var claims = new List<Claim> { new Claim(ClaimTypes.Name, username) };
 
-    var jwt = new JwtSecurityToken(
-        issuer: jwtIssuer,
-        audience: jwtAudience,
-        claims: claims,
-        expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(30)),
-        signingCredentials: new SigningCredentials(
-            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)), 
-            SecurityAlgorithms.HmacSha256)
-    );
-
-    return Results.Ok(new JwtSecurityTokenHandler().WriteToken(jwt));
-});
 
 app.MapGet("/data", [Authorize] () => new { message = "Hello World!" });
 

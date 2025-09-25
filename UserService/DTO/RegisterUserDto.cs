@@ -20,8 +20,7 @@ public class RegisterUserDto
     public string Email { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Пароль обязательный!")]
-    [MinLength(6, ErrorMessage = "Минимальная длина пароля - 6 символов")]
-    [MaxLength(30, ErrorMessage = "Максимальная длина пароля - 30 символов")]
+    [MinLength(6, ErrorMessage = "Пароль должен быть больше 6 символов")]
     public string Password { get; set; } = String.Empty;
     
 }

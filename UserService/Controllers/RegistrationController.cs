@@ -19,19 +19,13 @@ public class RegistrationController : ControllerBase
 
 
   [HttpPost]
-  public IActionResult Register([FromBody] RegisterUserDto user)
+  public async Task<IActionResult> Register([FromBody] RegisterUserDto user)
   {
-    if (!ModelState.IsValid)
-    {
-      return BadRequest(ModelState);
-    }
-
-    var (success, message) = _userRegister.RegisterUser(user);
-
+    var (success, message) = await _userRegister.RegisterUserAsync(user);
     if (!success)
       return BadRequest(message);
 
-    return Ok(new { Message = message });
+    return Ok(new { message });
   }
   
   

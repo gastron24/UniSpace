@@ -1,8 +1,13 @@
 using Microsoft.EntityFrameworkCore;
+using UserService.Models;
 
 namespace UserService.Infrastructure;
-
 public class UserDb : DbContext
 {
-    string ConnectionDb = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+    public UserDb(DbContextOptions<UserDb> options) : base(options)
+    { }
+    
+    public DbSet<User> Users { get; set; } = null!;
+    
+    
 }
