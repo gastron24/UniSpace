@@ -7,11 +7,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace UserService.Models;
 
-public class User
+ public class User
 { 
+   
+    
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
+
+    [Required] public string Role { get; set; } = "User";
 
     [Required(ErrorMessage = "Имя необходимо для регистрации!")]
     [StringLength(30, MinimumLength = 2, 
