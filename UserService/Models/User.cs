@@ -35,6 +35,9 @@ namespace UserService.Models;
     [StringLength(255)]
     public string PasswordHash { get; set; } =  string.Empty;
 
+    public bool IsBlocked { get; set; } = false;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    
     [Column(TypeName = "decimal(18,2)")]
     public decimal Balance { get; set; } = 0.00m;
 }
