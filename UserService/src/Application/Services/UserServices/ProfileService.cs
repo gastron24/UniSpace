@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Http.HttpResults;
+using System.ComponentModel.DataAnnotations;
 using UserService.DTO.User;
 
 namespace UserService.Services.UserService;
@@ -17,7 +17,8 @@ public class ProfileService : IProfileService
     public async Task<UserProfileDto> GetProfileAsync(int userId)
     {
         var user = await _userRepository.GetUserByIdAsync(userId);
-        if (user == null) return null;
+        if (string.IsNullOrWhiteSpace(user.FirstName))
+            throw new ValidationException("Пользователя не существует");
 
         return new UserProfileDto
         {

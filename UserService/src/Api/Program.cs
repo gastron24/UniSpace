@@ -7,8 +7,10 @@ using UserService.Infrastructure;
 using UserService.Services;
 using UserService.Services.Admin;
 using UserService.Services.UserService;
-
 var builder = WebApplication.CreateBuilder(args);
+
+
+
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secret = jwtSettings["Secret"] ?? throw new InvalidOperationException("JwtSettings:Secret не задан");
@@ -46,7 +48,9 @@ var app = builder.Build();
 
 app.UseAuthentication(); 
 app.UseAuthorization();
+app.UseExceptionHandler();
 app.MapControllers();
+app.MapHealthChecks("/health");
 app.MapGet("/data", [Authorize]() => new { message = "Hello World!" });
 
 app.Run();
