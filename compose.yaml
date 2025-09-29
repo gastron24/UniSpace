@@ -1,13 +1,24 @@
 ﻿services:
-  unispace:
-    image: unispace
-    build:
-      context: .
-      dockerfile: UniSpace/Dockerfile
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: UniverseDb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
-  user:
-    image: user
-    build:
-      context: .
-      dockerfile: User/Dockerfile
+  unispace-api:
+    build: .
+    ports:
+      - "5000:80"
+    depends_on:
+      - postgres
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=UniverseDb;Username=user;Password=13ssss13
+      - ASPNETCORE_ENVIRONMENT=Development
 
+volumes:
+  pgdata:
